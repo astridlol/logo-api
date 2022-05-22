@@ -16,3 +16,7 @@ Generation URL is `https://logo.jaack.host/generate` <br>
 
 `https://logo.jaack.host/generate?emoji=cookie` <br>
 `https://logo.jaack.host/generate?emoji=open book&color=4287f5`
+
+## Download
+
+You can choose to download the API and run it locally if you would like. Click [here](https://github.com/astridlol/logo-api/releases) to find all the releases.
