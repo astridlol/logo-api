@@ -5,7 +5,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"logo-api/emojipedia"
 	"logo-api/image"
-	"os"
 	"strconv"
 )
 
@@ -66,7 +65,7 @@ func generate(ctx iris.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		showError(ctx, "Error generating")
 	}
 
 	err = ctx.ServeFile("./output.png")
