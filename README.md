@@ -1,6 +1,6 @@
 # logo-api
 
-An API to generate logos on the very quickly.
+An API to generate logos very quickly.
 
 The base of this API is made from Alex's [logo generator CLI](https://gitlab.com/honour/logo-generator), I took it and made an API for it
 
