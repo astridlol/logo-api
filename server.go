@@ -6,6 +6,7 @@ import (
 	"logo-api/emojipedia"
 	"logo-api/image"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -40,13 +41,26 @@ func generate(ctx iris.Context) {
 	emojiName := ctx.URLParamDefault("emoji", "cookie")
 	color := ctx.URLParamDefault("color", "#ffffff")
 	sizeParam := ctx.URLParamDefault("size", "256")
+	emojiType := ctx.URLParamDefault("type", "apple")
+
+	// There's probably a better way to do this, so please feel free to improve it!
+	switch strings.ToLower(emojiType) {
+	case "apple":
+	case "android":
+	case "discord":
+	default:
+		{
+			showError(ctx, "Invalid emoji type. Accepted types: Apple, android, discord")
+			return
+		}
+	}
 
 	if len(color) < 6 {
 		showError(ctx, "Color must be in hex format e.g. ad5ff2")
 	}
 
-	fmt.Println("Searching for emoji...")
-	emoji, err := emojipedia.Search(emojiName)
+	fmt.Println(fmt.Sprintf("Searching for emoji with name %s, type %s", emojiName, emojiType))
+	emoji, err := emojipedia.Search(emojiName, emojiType)
 
 	if err != nil {
 		if err == emojipedia.ErrNoEmoji {
@@ -65,10 +79,10 @@ func generate(ctx iris.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		showError(ctx, "Error generating")
+		showError(ctx, "Error generating, check the URL and try again.")
+	} else {
+		err = ctx.ServeFile("./output.png")
+
+		fmt.Println("Logo saved to output.png!")
 	}
-
-	err = ctx.ServeFile("./output.png")
-
-	fmt.Println("Logo saved to output.png!")
 }
