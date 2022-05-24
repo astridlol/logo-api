@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
+	"logo-api/structs"
 	"net/http"
 	"strings"
 )
@@ -14,8 +15,8 @@ var (
 	ErrNoUrl   = errors.New("no url found")
 )
 
-func Search(term string, emojiType string) ([]byte, error) {
-	searchRes, err := http.Get(fmt.Sprintf("https://emojipedia.org/search/?q=%s", term))
+func Search(logo structs.Logo) ([]byte, error) {
+	searchRes, err := http.Get(fmt.Sprintf("https://emojipedia.org/search/?q=%s", logo.Emoji))
 
 	if err != nil {
 		return nil, err
@@ -59,16 +60,12 @@ func Search(term string, emojiType string) ([]byte, error) {
 
 	emojiUrl, exists := emojiDoc.Find(`section.vendor-list ul li div.vendor-container div.vendor-image img`).Attr("src")
 
-	switch emojiType {
+	switch logo.Platform {
 	// No need to do an Apple statement, as it's like that by default
 	case "android":
-		{
-			emojiUrl = strings.Replace(emojiUrl, "apple/325/", "google/313/", 3)
-		}
+		emojiUrl = strings.Replace(emojiUrl, "apple/325/", "google/313/", 3)
 	case "discord":
-		{
-			emojiUrl = strings.Replace(emojiUrl, "apple/325/", "twitter/322/", 3)
-		}
+		emojiUrl = strings.Replace(emojiUrl, "apple/325/", "twitter/322/", 3)
 	}
 
 	if !exists {

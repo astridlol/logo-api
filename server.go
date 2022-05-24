@@ -1,18 +1,31 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	caching "logo-api/caching"
 	"logo-api/emojipedia"
 	"logo-api/image"
+	"os"
 	"strconv"
 	"strings"
 )
+
+import . "logo-api/structs"
 
 func main() {
 	app := iris.New()
 	app.Get("/", hello)
 	app.Get("/generate", generate)
+
+	// Generate cache folder if it does not exist
+	if _, err := os.Stat("cache"); errors.Is(err, os.ErrNotExist) {
+		fmt.Println("Creating cache folder")
+		err := os.Mkdir("cache", os.ModePerm)
+		if err != nil {
+		}
+	}
 
 	// Listen for requests on port 8080
 	_ = app.Listen(":8080")
@@ -38,10 +51,26 @@ func showError(ctx iris.Context, err string) {
 }
 
 func generate(ctx iris.Context) {
+	// TODO: Implement some sort of caching
+	// [name]-[color]-[platform].png
+	// This will increase the speed of the API by a lot if it was already generated.
+
 	emojiName := ctx.URLParamDefault("emoji", "cookie")
-	color := ctx.URLParamDefault("color", "#ffffff")
+	color := ctx.URLParamDefault("color", "ffffff")
 	sizeParam := ctx.URLParamDefault("size", "256")
 	emojiType := ctx.URLParamDefault("type", "apple")
+
+	currentLogo := Logo{Emoji: emojiName, Color: color, Platform: emojiType, Size: sizeParam}
+
+	cached := caching.IsCached(currentLogo)
+
+	if cached {
+		fmt.Println("Using cached version")
+		_ = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
+		return
+	}
+
+	fmt.Println("Is cached?", cached)
 
 	// There's probably a better way to do this, so please feel free to improve it!
 	switch strings.ToLower(emojiType) {
@@ -50,7 +79,7 @@ func generate(ctx iris.Context) {
 	case "discord":
 	default:
 		{
-			showError(ctx, "Invalid emoji type. Accepted types: Apple, android, discord")
+			showError(ctx, "Invalid emoji type. Accepted types: apple, android, discord")
 			return
 		}
 	}
@@ -60,7 +89,7 @@ func generate(ctx iris.Context) {
 	}
 
 	fmt.Println(fmt.Sprintf("Searching for emoji with name %s, type %s", emojiName, emojiType))
-	emoji, err := emojipedia.Search(emojiName, emojiType)
+	emoji, err := emojipedia.Search(currentLogo)
 
 	if err != nil {
 		if err == emojipedia.ErrNoEmoji {
@@ -73,16 +102,12 @@ func generate(ctx iris.Context) {
 	}
 
 	size, err := strconv.Atoi(sizeParam)
-
-	fmt.Println("Please wait, generating image...")
-	err = image.Generate(emoji, color, size)
+	err = image.Generate(emoji, currentLogo, size)
 
 	if err != nil {
 		fmt.Println(err)
 		showError(ctx, "Error generating, check the URL and try again.")
 	} else {
-		err = ctx.ServeFile("./output.png")
-
-		fmt.Println("Logo saved to output.png!")
+		err = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
 	}
 }
