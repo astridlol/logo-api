@@ -51,10 +51,6 @@ func showError(ctx iris.Context, err string) {
 }
 
 func generate(ctx iris.Context) {
-	// TODO: Implement some sort of caching
-	// [name]-[color]-[platform].png
-	// This will increase the speed of the API by a lot if it was already generated.
-
 	emojiName := ctx.URLParamDefault("emoji", "cookie")
 	color := ctx.URLParamDefault("color", "ffffff")
 	sizeParam := ctx.URLParamDefault("size", "256")
