@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -51,9 +50,6 @@ func showError(ctx iris.Context, err string) {
 }
 
 func generate(ctx iris.Context) {
-	startedAt := time.Now().UnixNano() / 1000000
-	fmt.Println("Started : ", startedAt)
-
 	emojiName := ctx.URLParamDefault("emoji", "cookie")
 	color := ctx.URLParamDefault("color", "ffffff")
 	sizeParam := ctx.URLParamDefault("size", "256")
@@ -64,9 +60,6 @@ func generate(ctx iris.Context) {
 	cached := caching.IsCached(currentLogo)
 
 	if cached {
-		unixNano := time.Now().UnixNano()
-		milli := unixNano / 1000000
-		fmt.Println("Finished (cached) : ", milli-startedAt)
 		fmt.Println("Using cached version")
 		_ = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
 		return
@@ -114,9 +107,6 @@ func generate(ctx iris.Context) {
 		showError(ctx, "Error generating, check the URL and try again.")
 		return
 	} else {
-		unixNano := time.Now().UnixNano()
-		milli := unixNano / 1000000
-		fmt.Println("Finished: ", milli-startedAt)
 		err = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
 	}
 }
