@@ -7,12 +7,12 @@ import (
 	caching "logo-api/caching"
 	"logo-api/emojipedia"
 	"logo-api/image"
+	. "logo-api/structs"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
-
-import . "logo-api/structs"
 
 func main() {
 	app := iris.New()
@@ -51,6 +51,9 @@ func showError(ctx iris.Context, err string) {
 }
 
 func generate(ctx iris.Context) {
+	startedAt := time.Now().UnixNano() / 1000000
+	fmt.Println("Started : ", startedAt)
+
 	emojiName := ctx.URLParamDefault("emoji", "cookie")
 	color := ctx.URLParamDefault("color", "ffffff")
 	sizeParam := ctx.URLParamDefault("size", "256")
@@ -61,6 +64,9 @@ func generate(ctx iris.Context) {
 	cached := caching.IsCached(currentLogo)
 
 	if cached {
+		unixNano := time.Now().UnixNano()
+		milli := unixNano / 1000000
+		fmt.Println("Finished (cached) : ", milli-startedAt)
 		fmt.Println("Using cached version")
 		_ = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
 		return
@@ -82,6 +88,7 @@ func generate(ctx iris.Context) {
 
 	if len(color) < 6 {
 		showError(ctx, "Color must be in hex format e.g. ad5ff2")
+		return
 	}
 
 	fmt.Println(fmt.Sprintf("Searching for emoji with name %s, type %s", emojiName, emojiType))
@@ -90,8 +97,10 @@ func generate(ctx iris.Context) {
 	if err != nil {
 		if err == emojipedia.ErrNoEmoji {
 			showError(ctx, "Couldn't find an emoji with the search term provided")
+			return
 		} else if err == emojipedia.ErrNoUrl {
 			showError(ctx, "Couldn't fetch image URL for emoji")
+			return
 		} else {
 			fmt.Println(err)
 		}
@@ -103,7 +112,11 @@ func generate(ctx iris.Context) {
 	if err != nil {
 		fmt.Println(err)
 		showError(ctx, "Error generating, check the URL and try again.")
+		return
 	} else {
+		unixNano := time.Now().UnixNano()
+		milli := unixNano / 1000000
+		fmt.Println("Finished: ", milli-startedAt)
 		err = ctx.ServeFile(fmt.Sprintf("cache/%s.png", caching.GetName(currentLogo)))
 	}
 }

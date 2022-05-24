@@ -8,10 +8,10 @@ import (
 	"image"
 	_ "image/png"
 	"logo-api/caching"
-	"logo-api/structs"
+	. "logo-api/structs"
 )
 
-func Generate(imageData []byte, logoInfo structs.Logo, size int) error {
+func Generate(imageData []byte, logoInfo Logo, size int) error {
 	emoji, _, err := image.Decode(bytes.NewReader(imageData))
 
 	if err != nil {

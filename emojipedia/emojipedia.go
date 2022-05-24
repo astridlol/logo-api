@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
-	"logo-api/structs"
+	. "logo-api/structs"
 	"net/http"
 	"strings"
 )
@@ -15,7 +15,7 @@ var (
 	ErrNoUrl   = errors.New("no url found")
 )
 
-func Search(logo structs.Logo) ([]byte, error) {
+func Search(logo Logo) ([]byte, error) {
 	searchRes, err := http.Get(fmt.Sprintf("https://emojipedia.org/search/?q=%s", logo.Emoji))
 
 	if err != nil {

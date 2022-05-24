@@ -2,10 +2,9 @@ package caching
 
 import (
 	"fmt"
+	. "logo-api/structs"
 	"os"
 )
-
-import . "logo-api/structs"
 
 // exists - Returns whether the given file or directory
 func exists(path string) (bool, error) {
